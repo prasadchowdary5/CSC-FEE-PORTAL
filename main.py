@@ -1,52 +1,61 @@
 import streamlit as st
 import pandas as pd
 
-# Load the Excel file and read the specific sheets
-excel_file_path = 'PortalView.xlsx'  # replace with your actual Excel file path
-sheets = pd.read_excel(excel_file_path, sheet_name=["Year1", "Year2", "Year3", "Year4"])  # First 4 sheets
+# Load the Excel file and all sheets
+excel_path = "PortalView.xlsx"  # Update this path if needed
+sheets = pd.read_excel(excel_path, sheet_name=["Year1", "Year2", "Year3", "Year4"])
 
-# Strip any extra spaces in column names to avoid issues
-for sheet_name in sheets:
-    sheets[sheet_name].columns = sheets[sheet_name].columns.str.strip()
+# Combine all data into a single DataFrame for easier manipulation
+all_data = pd.concat(sheets.values(), keys=sheets.keys()).reset_index(level=0).rename(columns={"level_0": "Year"})
 
-# Combine roll number data from all sheets into a single DataFrame
-all_data = pd.concat([sheets[sheet].copy() for sheet in sheets], ignore_index=True)
-
-# Select unique roll numbers for the dropdown
+# Extract unique roll numbers
 roll_numbers = all_data['RollNo'].unique()
 
-# Streamlit app title
+# Title for the app
 st.title("Fee Portal")
 
-# Dropdown for selecting Roll Number
-selected_roll = st.selectbox("Select Roll Number", roll_numbers)
+# Dropdown to select a roll number
+selected_roll_no = st.selectbox("Select Roll Number", roll_numbers)
 
-# Filter data based on selected Roll Number
-student_data = all_data[all_data['RollNo'] == selected_roll]
+# Display the selected student's details
+if selected_roll_no:
+    student_data = all_data[all_data['RollNo'] == selected_roll_no]
 
-if not student_data.empty:
-    # Display student details in a structured format
-    st.subheader("Student Details")
-    st.write("**Roll No:**", student_data.iloc[0]['RollNo'])
-    st.write("**Student Name:**", student_data.iloc[0]['Name'])
+    if not student_data.empty:
+        student_name = student_data['Name'].iloc[0] if 'Name' in student_data.columns else "Name Not Found"
 
-    # Display fee details for each year
-    st.subheader("Fee Details")
-    total_fees = 0
-    for year, sheet_data in sheets.items():
-        year_data = sheet_data[sheet_data['RollNo'] == selected_roll]
-        if not year_data.empty:
-            if 'TOTAL DUE' in year_data.columns:
-                total_due = year_data.iloc[0]['TOTAL DUE'] if pd.notna(year_data.iloc[0]['TOTAL DUE']) else "Not Found"
-                st.write(f"{year}: {total_due}")
-                if pd.notna(year_data.iloc[0]['TOTAL DUE']):
-                    total_fees += year_data.iloc[0]['TOTAL DUE']
-            else:
-                st.write(f"{year}: 'TOTAL DUE' column not found")
-        else:
-            st.write(f"{year}: Not Found")
+        st.subheader("Student Details")
+        st.write(f"**Roll No:** {selected_roll_no}")
+        st.write(f"**Student Name:** {student_name}")
 
-    # Display the total fees
-    st.write("**Total Fees:**", total_fees)
-else:
-    st.error("No data found for the selected Roll Number.")
+        # Calculate and display total dues for each year and the grand total for the selected student
+        st.subheader("Fee Details")
+        total_due = 0
+        for year, year_data in student_data.groupby("Year"):
+            yearly_due = year_data['TOTAL DUE'].sum()
+            total_due += yearly_due
+            st.write(f"**{year}:** {yearly_due if yearly_due > 0 else 'Not Found'}")
+        st.write(f"**Total Fee Due:** {total_due}")
+    else:
+        st.write("No data found for the selected roll number.")
+
+# Calculate and display cumulative totals by prefix groups
+st.subheader("Overall Summary")
+
+# Define the prefix groups
+group1_prefixes = ("21B", "22B")
+group2_prefixes = ("216", "226")
+
+# Filter out rows where 'RollNo' is NaN before using str.startswith
+filtered_data = all_data.dropna(subset=['RollNo'])
+
+# Calculate total dues by prefix group
+group1_total = filtered_data[filtered_data['RollNo'].str.startswith(group1_prefixes)]['TOTAL DUE'].sum()
+group2_total = filtered_data[filtered_data['RollNo'].str.startswith(group2_prefixes)]['TOTAL DUE'].sum()
+
+st.write(f"**Total Dues for Roll Numbers starting with {group1_prefixes}:** {group1_total}")
+st.write(f"**Total Dues for Roll Numbers starting with {group2_prefixes}:** {group2_total}")
+
+# Display overall total due for all students
+overall_total_due = all_data['TOTAL DUE'].sum()
+st.write(f"**Overall Total Dues for All Students:** {overall_total_due}")
