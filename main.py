@@ -34,7 +34,7 @@ if selected_roll_no:
         for year, year_data in student_data.groupby("Year"):
             yearly_due = year_data['TOTAL DUE'].sum()
             total_due += yearly_due
-            st.write(f"**{year}:** {yearly_due if yearly_due > 0 else 'Not Found'}")
+            st.write(f"**{year}:** {yearly_due if yearly_due > 0 else '0'}")
         st.write(f"**Total Fee Due:** {total_due}")
     else:
         st.write("0 for the selected roll number.")
