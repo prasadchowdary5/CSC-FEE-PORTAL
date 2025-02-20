@@ -37,7 +37,7 @@ if selected_roll_no:
             st.write(f"**{year}:** {yearly_due if yearly_due > 0 else 'Not Found'}")
         st.write(f"**Total Fee Due:** {total_due}")
     else:
-        st.write("No data found for the selected roll number.")
+        st.write("0 for the selected roll number.")
 
 # Calculate and display cumulative totals by prefix groups
 st.subheader("Overall Summary")
