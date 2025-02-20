@@ -18,13 +18,22 @@ if dark_mode:
     st.markdown(
         """
         <style>
-        body {
-            background-color: #121212;
-            color: white;
+        body, .main, .stApp {
+            background-color: #121212 !important;
+            color: white !important;
         }
-        .stSelectbox, .stTextInput {
-            background-color: #333;
-            color: white;
+        .stSelectbox div, .stTextInput input {
+            background-color: #333 !important;
+            color: white !important;
+        }
+        .stButton>button {
+            background-color: #444 !important;
+            color: white !important;
+            border: 1px solid white !important;
+        }
+        .stDataFrame, .stTable {
+            background-color: #222 !important;
+            color: white !important;
         }
         </style>
         """,
@@ -34,13 +43,22 @@ else:
     st.markdown(
         """
         <style>
-        body {
-            background-color: white;
-            color: black;
+        body, .main, .stApp {
+            background-color: white !important;
+            color: black !important;
         }
-        .stSelectbox, .stTextInput {
-            background-color: #f0f0f0;
-            color: black;
+        .stSelectbox div, .stTextInput input {
+            background-color: #f0f0f0 !important;
+            color: black !important;
+        }
+        .stButton>button {
+            background-color: #ddd !important;
+            color: black !important;
+            border: 1px solid black !important;
+        }
+        .stDataFrame, .stTable {
+            background-color: white !important;
+            color: black !important;
         }
         </style>
         """,
